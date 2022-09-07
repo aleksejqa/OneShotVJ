@@ -995,7 +995,7 @@ class WiFiScanner:
             essid = truncateStr(network['ESSID'], 25)
             deviceName = truncateStr(network['Device name'], 27)
             line = '{:<4} {:<25} {:<8} {:<4} {:<27} {:<}'.format(
-                number,  essid,
+                number, network['BSSID'], essid,
                 network['Security type'], network['Level'],
                 deviceName, model
                 )
