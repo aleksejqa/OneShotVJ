@@ -983,8 +983,8 @@ class WiFiScanner:
                 colored('Already stored', color='yellow')
             ))
         print('Networks list:')
-        print('{:<4} {:<18} {:<25} {:<8} {:<4} {:<27} {:<}'.format(
-            '#', 'BSSID', 'ESSID', 'Sec.', 'PWR', 'WSC device name', 'WSC model'))
+        print('{:<4} {:<25} {:<8} {:<4} {:<27} {:<}'.format(
+            '#',  'ESSID', 'Sec.', 'PWR', 'WSC device name', 'WSC model'))
 
         network_list_items = list(network_list.items())
         if args.reverse_scan:
@@ -1160,13 +1160,7 @@ if __name__ == '__main__':
         action='store_true',
         help='Reverse order of networks in the list of networks. Useful on small displays'
     )
-    parser.add_argument(
-        '--mtk-wifi',
-        action='store_true',
-        help='Activate MediaTek Wi-Fi interface driver on startup and deactivate it on exit '
-             '(for internal Wi-Fi adapters implemented in MediaTek SoCs). '
-             'Turn off Wi-Fi in the system settings before using this.'
-    )
+
     parser.add_argument(
         '-v', '--verbose',
         action='store_true',
@@ -1179,15 +1173,6 @@ if __name__ == '__main__':
         die("The program requires Python 3.6 and above")
     if os.getuid() != 0:
         die("Run it as root")
-
-    if args.mtk_wifi:
-        wmtWifi_device = Path("/dev/wmtWifi")
-        if not wmtWifi_device.is_char_device():
-            die("Unable to activate MediaTek Wi-Fi interface device (--mtk-wifi): "
-                "/dev/wmtWifi does not exist or it is not a character device")
-        wmtWifi_device.chmod(0o644)
-        wmtWifi_device.write_text("1")
-
     if not ifaceUp(args.interface):
         die('Unable to up interface "{}"'.format(args.interface))
 
@@ -1204,16 +1189,10 @@ if __name__ == '__main__':
                     except FileNotFoundError:
                         vuln_list = []
                     scanner = WiFiScanner(args.interface, vuln_list)
-                    if not args.loop:
-                        print('[*] BSSID not specified (--bssid) — scanning for available networks')
+
                     args.bssid = scanner.prompt_network()
 
-                if args.bssid:
-                    companion = Companion(args.interface, args.write, print_debug=args.verbose)
-                    if args.bruteforce:
-                        companion.smart_bruteforce(args.bssid, args.pin, args.delay)
-                    else:
-                        companion.single_connection(args.bssid, args.pin, args.pixie_dust,
+                    companion.single_connection(args.bssid, args.pin, args.pixie_dust,
                                                     args.show_pixie_cmd, args.pixie_force)
             if not args.loop:
                 break
@@ -1233,5 +1212,4 @@ if __name__ == '__main__':
     if args.iface_down:
         ifaceUp(args.interface, down=True)
 
-    if args.mtk_wifi:
-        wmtWifi_device.write_text("0")
+
